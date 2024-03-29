@@ -1,16 +1,27 @@
+from dotenv import load_dotenv
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.sql import func
 import pandas as pd
 
+# Load the .env file
+load_dotenv()
+
+# Get the environment variables
+DATABASE_URL = os.getenv('DATABASE_URL')
+DEBUG = os.getenv('DEBUG', False)
+
 # Initialize Flask application
 app = Flask(__name__)
 CORS(app)
 
 # Configure database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 db = SQLAlchemy(app)
+
+# Define the database models
 
 
 class Company(db.Model):
@@ -153,4 +164,4 @@ def add_financials():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create the database table
-    app.run(debug=True)
+    app.run(debug=DEBUG)
