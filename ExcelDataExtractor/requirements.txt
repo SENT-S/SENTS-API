@@ -5,3 +5,5 @@ sqlalchemy
 flask-cors
 flask_sqlalchemy
 python-dotenv
+psycopg2
+psycopg2-binary
