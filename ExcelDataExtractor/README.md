@@ -69,3 +69,10 @@ Response: The financial statements for the company.
 Retrieve all companies.
 
 Response: A list of all companies.
+
+## Docker
+
+docker-compose build
+docker-compose up
+docker-compose down
+docker-compose logs

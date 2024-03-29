@@ -12,10 +12,14 @@ load_dotenv()
 # Get the environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
 DEBUG = os.getenv('DEBUG', False)
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS')
+
+# Convert ALLOWED_ORIGINS from a comma-separated string to a list
+ALLOWED_ORIGINS = ALLOWED_ORIGINS.split(',')
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
 
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
