@@ -1,0 +1,23 @@
+# Python bytecode
+__pycache__/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Dependency directories
+venv/
+env/
+envs/
+env
+
+# db instances
+instance
