@@ -12,14 +12,11 @@ load_dotenv()
 # Get the environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
 DEBUG = os.getenv('DEBUG', False)
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS')
-
-# Convert ALLOWED_ORIGINS from a comma-separated string to a list
-ALLOWED_ORIGINS = ALLOWED_ORIGINS.split(',')
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS').split(',')
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app, origins=ALLOWED_ORIGINS)
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
 
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
@@ -32,6 +29,7 @@ class Company(db.Model):
     __tablename__ = 'company'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
+    country = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
@@ -57,10 +55,7 @@ class FinancialStatement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey(
         'company.id'), nullable=False)
-    Project_Name = db.Column(db.String(100))
-    Task_Name = db.Column(db.String(100))
-    Assigned_to = db.Column(db.String(100))
-    Progress = db.Column(db.String(50))
+    data = db.Column(db.JSON)
     created_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
@@ -112,50 +107,46 @@ def get_financials(company_id):
 @app.route('/extract', methods=['POST'])
 def add_financials():
     try:
-        # Get the file and company name from the request
         file = request.files.get('file')
         company_name = request.form.get('company_name')
-        if file and company_name:
-            # Convert the company name to lowercase and strip leading/trailing spaces
-            company_name = company_name.lower().strip()
+        country_name = request.form.get('country')
 
-            # Check if the file has already been uploaded
+        if file and company_name and country_name:
+            company_name = company_name.lower().strip()
+            country_name = country_name.lower().strip()
+
             uploaded_file = UploadedFile.query.filter_by(
                 filename=file.filename).first()
             if uploaded_file:
-                # If the file has already been uploaded, return an error message
                 return jsonify({'message': 'File has already been uploaded for another company', 'success': False}), 400
 
-            # Check if the company already exists in the database
             company = Company.query.filter_by(name=company_name).first()
             if not company:
-                # If the company does not exist, create a new one
-                company = Company(name=company_name)
+                company = Company(name=company_name, country=country_name)
                 db.session.add(company)
                 db.session.commit()
 
-            # If the file has not been uploaded, create a new record
             uploaded_file = UploadedFile(
                 filename=file.filename, company_id=company.id)
             db.session.add(uploaded_file)
 
-            # Load the Excel file into a pandas DataFrame
-            data = pd.read_excel(file, skiprows=5)
+            data = pd.read_excel(file, sheet_name='Snapshot')
 
-            # Extract only the required columns
-            data = data[['Project Name', 'Task Name',
-                         'Assigned to', 'Progress']]
+            # Convert DataFrame to dictionary, skipping empty rows
+            data_dict = data.dropna(how='all').to_dict('records')
 
-            # Rename the columns to match the SQLAlchemy model
-            data.columns = ['Project_Name',
-                            'Task_Name', 'Assigned_to', 'Progress']
+            # clean the data so that it can be stored in the database well for easy access in front end
+            for row in data_dict:
+                for key in row:
+                    if isinstance(row[key], float):
+                        row[key] = str(row[key])
+                    if pd.isnull(row[key]):
+                        row[key] = None
 
-            # Save each row of data to the database
-            for _, row in data.iterrows():
-                # If the financial statement does not exist, create a new one
-                record = FinancialStatement(
-                    company_id=company.id, **row.to_dict())
-                db.session.add(record)
+            # Save all rows of data to the database as an array of objects in a single record
+            record = FinancialStatement(
+                company_id=company.id, data=data_dict)
+            db.session.add(record)
             db.session.commit()
 
             return jsonify({'message': 'Financial statements added successfully', 'success': True}), 200
@@ -168,4 +159,4 @@ def add_financials():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create the database table
-    app.run(debug=DEBUG)
+    app.run(host='0.0.0.0', debug=DEBUG)

@@ -76,3 +76,5 @@ docker-compose build
 docker-compose up
 docker-compose down
 docker-compose logs
+docker build -t image-name .
+docker run -p 4000:80 image-name
