@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.sql import func
@@ -21,6 +21,9 @@ CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 db = SQLAlchemy(app)
+
+# Blue print for V1 API
+v1_Blueprint = Blueprint('v1', __name__, url_prefix='/api/v1')
 
 # Define the database models
 
@@ -64,7 +67,7 @@ class FinancialStatement(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-@app.route('/companies', methods=['GET'])
+@v1_Blueprint.route('/companies', methods=['GET'])
 def get_companies():
     try:
         # Retrieve all companies from the database
@@ -82,7 +85,7 @@ def get_companies():
         return jsonify({'message': str(e), 'success': False}), 500
 
 
-@app.route('/financials/<int:company_id>', methods=['GET'])
+@v1_Blueprint.route('/financials/<int:company_id>', methods=['GET'])
 def get_financials(company_id):
     try:
         # Retrieve the company with the given id
@@ -104,7 +107,7 @@ def get_financials(company_id):
         return jsonify({'message': str(e), 'success': False}), 500
 
 
-@app.route('/extract', methods=['POST'])
+@v1_Blueprint.route('/extract', methods=['POST'])
 def add_financials():
     try:
         file = request.files.get('file')
@@ -155,6 +158,9 @@ def add_financials():
     except Exception as e:
         return jsonify({'message': str(e), 'success': False}), 500
 
+
+# Register the blueprints
+app.register_blueprint(v1_Blueprint)
 
 if __name__ == '__main__':
     with app.app_context():
