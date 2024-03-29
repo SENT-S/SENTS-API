@@ -19,7 +19,7 @@ ALLOWED_ORIGINS = ALLOWED_ORIGINS.split(',')
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
+CORS(app, origins=ALLOWED_ORIGINS)
 
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL

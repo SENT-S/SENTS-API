@@ -1,9 +1,9 @@
 version: "3"
 services:
-  web:
+  api1:
     build:
       context: ./ExcelDataExtractor
     env_file:
       - ./ExcelDataExtractor/.env
     ports:
-      - "5000:5000"
+      - "5001:5001"
