@@ -9,14 +9,14 @@ from routes import v1_Blueprint
 # Load the .env file
 load_dotenv()
 
-# Get the APP_ENV value from the .env file
-app_env = os.getenv("APP_ENV")
+# Get the environment variables
+DATABASE_URL = os.getenv('DATABASE_URL')
+DEBUG = os.getenv('DEBUG', False)
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS').split(',')
 
+# Initialize Flask application
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-
-# Load the correct configuration based on the APP_ENV environment variable
-app.config.from_object(f'config.{app_env}')
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
 
 db.init_app(app)
 
