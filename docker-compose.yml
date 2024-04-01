@@ -2,8 +2,8 @@ version: "3"
 services:
   api1:
     build:
-      context: ./ExcelDataExtractor
+      context: ./Extractor_api
     env_file:
-      - ./ExcelDataExtractor/.env
+      - ./Extractor_api/.env
     ports:
       - "5000:5000"
