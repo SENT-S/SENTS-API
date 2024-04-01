@@ -16,6 +16,14 @@ Start a virtual environment with in the directory of the Excel Data Extractor. t
 python -m venv env
 ```
 
+or
+
+```bash
+pip install virtualenv
+
+virtualenv env
+```
+
 Activate the environment by running the following command:
 
 Windows Machine
