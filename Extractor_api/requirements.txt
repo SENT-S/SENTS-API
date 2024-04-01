@@ -8,3 +8,5 @@ python-dotenv
 psycopg2
 psycopg2-binary
 flask-migrate
+gunicorn   # for production (UNIX only)
+waitress # windows only
