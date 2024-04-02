@@ -14,7 +14,7 @@ COPY .env .env
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make port 5000 available to the world outside this container
-EXPOSE 5000
+EXPOSE 100
 
 # Run Gunicorn server when the container launches
 CMD ["gunicorn", "-w", "4", "wsgi:app"]

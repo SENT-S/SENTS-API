@@ -7,3 +7,4 @@ services:
       - ./Extractor_api/.env
     ports:
       - "5000:5000"
+    command: python app.py

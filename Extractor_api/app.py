@@ -31,4 +31,4 @@ print(f'Running in {os.getenv("APP_ENV")} mode')
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create the database table
-    app.run(host='0.0.0.0', debug=app.config['DEBUG'])
+    app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=5000)
